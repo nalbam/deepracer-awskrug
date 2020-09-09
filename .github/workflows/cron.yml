@@ -1,0 +1,70 @@
+name: Build-Cron
+
+on:
+  schedule:
+    - cron: "*/20 * * * *"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v1
+
+      - name: Report
+        run: |
+          bash ./report.sh
+
+      - name: Commit & Push
+        uses: opspresso/action-builder@master
+        with:
+          args: --commit
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          MESSAGE_PATH: ./build/commit_message.txt
+
+      - name: Post to Slack
+        uses: opspresso/action-builder@master
+        with:
+          args: --slack
+        env:
+          SLACK_TOKEN: ${{ secrets.SLACK_TOKEN }}
+          JSON_PATH: ./build/slack_message-tt.json
+          LOOSE_ERROR: "true"
+
+      - name: Post to Slack
+        uses: opspresso/action-builder@master
+        with:
+          args: --slack
+        env:
+          SLACK_TOKEN: ${{ secrets.SLACK_TOKEN }}
+          JSON_PATH: ./build/slack_message-oa.json
+          LOOSE_ERROR: "true"
+
+      - name: Post to Slack
+        uses: opspresso/action-builder@master
+        with:
+          args: --slack
+        env:
+          SLACK_TOKEN: ${{ secrets.SLACK_TOKEN }}
+          JSON_PATH: ./build/slack_message-h2h.json
+          LOOSE_ERROR: "true"
+
+      - name: Post to Slack
+        uses: opspresso/action-builder@master
+        with:
+          args: --slack
+        env:
+          SLACK_TOKEN: ${{ secrets.SLACK_TOKEN }}
+          JSON_PATH: ./build/slack_message-s-tt.json
+          LOOSE_ERROR: "true"
+
+      - name: Post to Slack
+        uses: opspresso/action-builder@master
+        with:
+          args: --slack
+        env:
+          SLACK_TOKEN: ${{ secrets.SLACK_TOKEN }}
+          JSON_PATH: ./build/slack_message-s-h2h.json
+          LOOSE_ERROR: "true"
