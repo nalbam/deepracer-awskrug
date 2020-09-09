@@ -79,22 +79,43 @@ _load() {
     echo
 }
 
-_racer() {
-    RACER=$1
+_racers() {
+    TARGET=$1
+    LEAGUE=$2
+    SEASON=$3
+    FILENAME=$4
 
-    USERNAME=
+    CHANGED=
 
-    RACERS=${SHELL_DIR}/racers.json
+    _command "_racers ${LEAGUE} ${SEASON} ..."
 
-    if [ -f ${RACERS} ]; then
-        USERNAME="$(cat ${RACERS} | jq -r --arg RACER "${RACER}" '.[] | select(.racername==$RACER) | "\(.username)"')"
-
-        if [ "${USERNAME}" != "" ]; then
-            RACER="${RACER}   @${USERNAME}"
-        fi
+    if [ -f ${SHELL_DIR}/cache/${FILENAME}-racers.log ]; then
+        cat ${SHELL_DIR}/cache/${FILENAME}-racers.log > ${SHELL_DIR}/build/${FILENAME}-racers.log
+        rm -rf ${SHELL_DIR}/cache/${FILENAME}-racers.log
+        touch ${SHELL_DIR}/cache/${FILENAME}-racers.log
     fi
 
-    # RACER="${RACER}   :tada:"
+    RACERS=${SHELL_DIR}/racers.txt
+
+    while read LINE; do
+        ARR=(${LINE})
+
+        if [ -f ${SHELL_DIR}/cache/${FILENAME}.log ]; then
+            RECORD="$(cat ${SHELL_DIR}/cache/${FILENAME}.log | grep "${ARR[0]}")"
+
+            if [ "${RECORD}" != "" ]; then
+                ARR2=(${RECORD})
+
+                RACER=$(echo "${ARR2[1]}" | sed -e 's/^"//' -e 's/"$//')
+
+                echo "${RECORD}" >> ${SHELL_DIR}/cache/${FILENAME}-racers.log
+            fi
+        fi
+    done < ${RACERS}
+
+    _result "_racers ${LEAGUE} ${SEASON} done"
+
+    echo
 }
 
 _build() {
@@ -129,36 +150,33 @@ _build() {
 
         RACER=$(echo "${ARR[1]}" | sed -e 's/^"//' -e 's/"$//')
 
-        _racer ${RACER}
+        RECORD="${ARR[0]}"
 
-        if [ "${USERNAME}" != "" ]; then
-            RECORD="${ARR[0]}"
+        if [ "x${COUNT}" == "x0" ]; then
+            CHANGED=true
 
-            if [ "x${COUNT}" == "x0" ]; then
-                CHANGED=true
+            if [ -f ${SHELL_DIR}/build/${FILENAME}.log ]; then
+                OLD_RECORD=$(cat ${SHELL_DIR}/build/${FILENAME}.log | grep "\"${RACER}\"" | cut -d' ' -f1)
 
-                if [ -f ${SHELL_DIR}/build/${FILENAME}.log ]; then
-                    RECORD="${RECORD}   ~$(cat ${SHELL_DIR}/build/${FILENAME}.log | grep "${ARR[1]}" | cut -d' ' -f1)~"
-                fi
-
-                RACER="${RACER}   :tada:"
-
-                _result "changed ${RECORD} ${RACER}"
+                RECORD="${RECORD}   ~${OLD_RECORD}~"
             fi
 
-            NO=$(printf %02d $IDX)
+            _username ${RACER}
 
-            TEXT="${NO}   ${RECORD}   ${RACER}"
-
-            echo "{\"type\":\"context\",\"elements\":[{\"type\":\"mrkdwn\",\"text\":\"${TEXT}\"}]}," >> ${MESSAGE}
-
-            # if [ "${IDX}" == "${MAX_IDX}" ]; then
-            #     break
-            # fi
-
-            IDX=$(( ${IDX} + 1 ))
+            _result "changed ${RECORD} ${RACER}"
         fi
 
+        NO=$(printf %02d $IDX)
+
+        TEXT="${NO}   ${RECORD}   ${RACER}"
+
+        echo "{\"type\":\"context\",\"elements\":[{\"type\":\"mrkdwn\",\"text\":\"${TEXT}\"}]}," >> ${MESSAGE}
+
+        if [ "${IDX}" == "${MAX_IDX}" ]; then
+            break
+        fi
+
+        IDX=$(( ${IDX} + 1 ))
     done < ${SHELL_DIR}/cache/${FILENAME}.log
 
     echo "{\"type\":\"divider\"}" >> ${MESSAGE}
@@ -177,21 +195,41 @@ _build() {
     echo
 }
 
+_username() {
+    RACER=$1
+
+    USERNAME=
+
+    RACERS=${SHELL_DIR}/racers.txt
+
+    if [ -f ${RACERS} ]; then
+        USERNAME="$(cat ${RACERS} | jq -r --arg RACER "${RACER}" '.[] | select(.racername==$RACER) | "\(.username)"')"
+
+        if [ "${USERNAME}" != "" ]; then
+            RACER="${RACER}   @${USERNAME}"
+        fi
+    fi
+
+    RACER="${RACER}   :tada:"
+}
+
 _run() {
     _prepare
 
-    LIST=${SHELL_DIR}/build/league.txt
-
-    cat ${SHELL_DIR}/league.json \
-        | jq -r '.[] | "\(.target) \(.league) \(.season) \(.filename)"' \
-        > ${LIST}
+    LEAGUES=${SHELL_DIR}/league.txt
 
     while read LINE; do
         ARR=(${LINE})
 
-        _load ${ARR[0]} ${ARR[1]} ${ARR[2]} ${ARR[3]}
-        _build ${ARR[0]} ${ARR[1]} ${ARR[2]} ${ARR[3]}
-    done < ${LIST}
+        TARGET=${ARR[0]}
+        LEAGUE=${ARR[1]}
+        SEASON=${ARR[2]}
+        FILENAME=${ARR[3]}
+
+        _load ${TARGET} ${LEAGUE} ${SEASON} ${FILENAME}
+        _racers ${TARGET} ${LEAGUE} ${SEASON} ${FILENAME}
+        _build ${TARGET} ${LEAGUE} ${SEASON} ${FILENAME}-racers
+    done < ${LEAGUES}
 
     _success
 }

@@ -1,0 +1,5 @@
+tt virtual virtual-season-2020-09-tt 2020-09-tt
+oa virtual virtual-season-2020-09-oa 2020-09-oa
+h2h virtual virtual-season-2020-09-h2h 2020-09-h2h
+s-tt inperson summit-season-2020-09-tt summit-2020-09-tt
+s-h2h inperson summit-season-2020-09-h2h summit-2020-09-h2h
