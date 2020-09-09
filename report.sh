@@ -94,7 +94,7 @@ _racer() {
         fi
     fi
 
-    RACER="${RACER}   :tada:"
+    # RACER="${RACER}   :tada:"
 }
 
 _build() {
@@ -127,30 +127,38 @@ _build() {
 
         ARR=(${LINE})
 
-        NO=$(printf %02d $IDX)
-        RECORD="${ARR[0]}"
         RACER=$(echo "${ARR[1]}" | sed -e 's/^"//' -e 's/"$//')
 
-        if [ "x${COUNT}" == "x0" ]; then
-            CHANGED=true
+        _racer ${RACER}
 
-            if [ -f ${SHELL_DIR}/build/${FILENAME}.log ]; then
-                RECORD="${RECORD}   ~$(cat ${SHELL_DIR}/build/${FILENAME}.log | grep "${ARR[1]}" | cut -d' ' -f1)~"
+        if [ "${USERNAME}" != "" ]; then
+            RECORD="${ARR[0]}"
+
+            if [ "x${COUNT}" == "x0" ]; then
+                CHANGED=true
+
+                if [ -f ${SHELL_DIR}/build/${FILENAME}.log ]; then
+                    RECORD="${RECORD}   ~$(cat ${SHELL_DIR}/build/${FILENAME}.log | grep "${ARR[1]}" | cut -d' ' -f1)~"
+                fi
+
+                RACER="${RACER}   :tada:"
+
+                _result "changed ${RECORD} ${RACER}"
             fi
 
-            _racer ${RACER}
+            NO=$(printf %02d $IDX)
 
-            _result "changed ${RECORD} ${RACER}"
+            TEXT="${NO}   ${RECORD}   ${RACER}"
+
+            echo "{\"type\":\"context\",\"elements\":[{\"type\":\"mrkdwn\",\"text\":\"${TEXT}\"}]}," >> ${MESSAGE}
+
+            # if [ "${IDX}" == "${MAX_IDX}" ]; then
+            #     break
+            # fi
+
+            IDX=$(( ${IDX} + 1 ))
         fi
 
-        TEXT="${NO}   ${RECORD}   ${RACER}"
-        echo "{\"type\":\"context\",\"elements\":[{\"type\":\"mrkdwn\",\"text\":\"${TEXT}\"}]}," >> ${MESSAGE}
-
-        if [ "${IDX}" == "${MAX_IDX}" ]; then
-            break
-        fi
-
-        IDX=$(( ${IDX} + 1 ))
     done < ${SHELL_DIR}/cache/${FILENAME}.log
 
     echo "{\"type\":\"divider\"}" >> ${MESSAGE}
