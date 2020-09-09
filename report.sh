@@ -88,7 +88,11 @@ _racers() {
     SEASON=$3
     FILENAME=$4
 
-    CHANGED=
+    RACERS=${SHELL_DIR}/racers.txt
+
+    if [ ! -f ${RACERS} ]; then
+        return
+    fi
 
     _command "_racers ${LEAGUE} ${SEASON} ..."
 
@@ -97,8 +101,6 @@ _racers() {
         rm -rf ${SHELL_DIR}/cache/${FILENAME}-racers.log
         touch ${SHELL_DIR}/cache/${FILENAME}-racers.log
     fi
-
-    RACERS=${SHELL_DIR}/racers.txt
 
     while read LINE; do
         ARR=(${LINE})
@@ -201,15 +203,15 @@ _build() {
 _username() {
     RACER=$1
 
-    USERNAME=
-
     RACERS=${SHELL_DIR}/racers.txt
 
     if [ -f ${RACERS} ]; then
-        USERNAME="$(cat ${RACERS} | jq -r --arg RACER "${RACER}" '.[] | select(.racername==$RACER) | "\(.username)"')"
+        LINE="$(cat ${RACERS} | grep "\"${RACER}\"")"
 
-        if [ "${USERNAME}" != "" ]; then
-            RACER="${RACER}   @${USERNAME}"
+        if [ "${LINE}" != "" ]; then
+            ARR=(${LINE})
+
+            RACER="${RACER}   @${ARR[1]}"
         fi
     fi
 
