@@ -2,7 +2,7 @@ name: Build-Cron
 
 on:
   schedule:
-    - cron: "*/20 * * * *"
+    - cron: "*/30 * * * *"
 
 jobs:
   build:
@@ -30,7 +30,7 @@ jobs:
           args: --slack
         env:
           SLACK_TOKEN: ${{ secrets.SLACK_TOKEN }}
-          JSON_PATH: ./build/slack_message-tt.json
+          JSON_PATH: ./build/slack_message-virtual-tt.json
           LOOSE_ERROR: "true"
 
       - name: Post to Slack
@@ -39,7 +39,7 @@ jobs:
           args: --slack
         env:
           SLACK_TOKEN: ${{ secrets.SLACK_TOKEN }}
-          JSON_PATH: ./build/slack_message-oa.json
+          JSON_PATH: ./build/slack_message-virtual-oa.json
           LOOSE_ERROR: "true"
 
       - name: Post to Slack
@@ -48,7 +48,7 @@ jobs:
           args: --slack
         env:
           SLACK_TOKEN: ${{ secrets.SLACK_TOKEN }}
-          JSON_PATH: ./build/slack_message-h2h.json
+          JSON_PATH: ./build/slack_message-virtual-h2h.json
           LOOSE_ERROR: "true"
 
       - name: Post to Slack
@@ -57,7 +57,7 @@ jobs:
           args: --slack
         env:
           SLACK_TOKEN: ${{ secrets.SLACK_TOKEN }}
-          JSON_PATH: ./build/slack_message-s-tt.json
+          JSON_PATH: ./build/slack_message-inperson-tt.json
           LOOSE_ERROR: "true"
 
       - name: Post to Slack
@@ -66,5 +66,5 @@ jobs:
           args: --slack
         env:
           SLACK_TOKEN: ${{ secrets.SLACK_TOKEN }}
-          JSON_PATH: ./build/slack_message-s-h2h.json
+          JSON_PATH: ./build/slack_message-inperson-h2h.json
           LOOSE_ERROR: "true"

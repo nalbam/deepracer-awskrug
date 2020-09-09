@@ -48,10 +48,13 @@ _error() {
 _prepare() {
     _command "_prepare"
 
+    YYYY=$(date +%Y)
+    MM=$(date +%m)
+
     # rm -rf ${SHELL_DIR}/build
 
-    mkdir -p ${SHELL_DIR}/build
-    mkdir -p ${SHELL_DIR}/cache
+    mkdir -p ${SHELL_DIR}/build/${YYYY}/${MM}
+    mkdir -p ${SHELL_DIR}/cache/${YYYY}/${MM}
 
     echo
 }
@@ -128,10 +131,10 @@ _build() {
 
     _command "_build ${LEAGUE} ${SEASON} ..."
 
-    MESSAGE=${SHELL_DIR}/build/slack_message-${TARGET}.json
+    MESSAGE=${SHELL_DIR}/build/slack_message-${LEAGUE}-${TARGET}.json
 
     MAX_IDX=20
-    if [ "${TARGET}" == "h2h" ]; then
+    if [ "${LEAGUE}-${TARGET}" == "virtual-h2h" ]; then
         MAX_IDX=32
     fi
 
@@ -221,14 +224,15 @@ _run() {
     while read LINE; do
         ARR=(${LINE})
 
-        TARGET=${ARR[0]}
-        LEAGUE=${ARR[1]}
-        SEASON=${ARR[2]}
-        FILENAME=${ARR[3]}
+        LEAGUE=${ARR[0]}
+        SEASON=${ARR[1]}
+        TYPE=${ARR[2]}
 
-        _load ${TARGET} ${LEAGUE} ${SEASON} ${FILENAME}
-        _racers ${TARGET} ${LEAGUE} ${SEASON} ${FILENAME}
-        _build ${TARGET} ${LEAGUE} ${SEASON} ${FILENAME}-racers
+        SEASON=${SEASON}-${YYYY}-${MM}-${TYPE}
+
+        _load   ${TYPE} ${LEAGUE} ${SEASON} ${YYYY}/${MM}/${SEASON}
+        _racers ${TYPE} ${LEAGUE} ${SEASON} ${YYYY}/${MM}/${SEASON}
+        _build  ${TYPE} ${LEAGUE} ${SEASON} ${YYYY}/${MM}/${SEASON}-racers
     done < ${LEAGUES}
 
     _success
