@@ -116,7 +116,7 @@ _racers() {
         fi
     done < ${RACERS}
 
-    if [ -f ${SHELL_DIR}/cache/${FILENAME}-racers.new ]; then
+    if [ -f ${SHELL_DIR}/build/${FILENAME}-racers.new ]; then
         cat ${SHELL_DIR}/build/${FILENAME}-racers.new | sort > ${SHELL_DIR}/cache/${FILENAME}-racers.log
     fi
 
