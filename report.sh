@@ -98,8 +98,6 @@ _racers() {
 
     if [ -f ${SHELL_DIR}/cache/${FILENAME}-racers.log ]; then
         cat ${SHELL_DIR}/cache/${FILENAME}-racers.log > ${SHELL_DIR}/build/${FILENAME}-racers.log
-        rm -rf ${SHELL_DIR}/cache/${FILENAME}-racers.log
-        touch ${SHELL_DIR}/cache/${FILENAME}-racers.log
     fi
 
     while read LINE; do
@@ -113,10 +111,14 @@ _racers() {
 
                 RACER=$(echo "${ARR2[1]}" | sed -e 's/^"//' -e 's/"$//')
 
-                echo "${RECORD}" >> ${SHELL_DIR}/cache/${FILENAME}-racers.log
+                echo "${RECORD}" >> ${SHELL_DIR}/build/${FILENAME}-racers.new
             fi
         fi
     done < ${RACERS}
+
+    if [ -f ${SHELL_DIR}/cache/${FILENAME}-racers.new ]; then
+        cat ${SHELL_DIR}/build/${FILENAME}-racers.new | sort > ${SHELL_DIR}/cache/${FILENAME}-racers.log
+    fi
 
     _result "_racers ${LEAGUE} ${SEASON} done"
 
