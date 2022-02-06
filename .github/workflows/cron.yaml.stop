@@ -1,4 +1,4 @@
-name: Build-Cron
+name: league
 
 on:
   schedule:
